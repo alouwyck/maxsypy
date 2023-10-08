@@ -226,6 +226,65 @@ def W_approx(rho, tau):
     return F
 
 
+def butler(r, t, R, T, S, Q, ns=12):
+    """
+    Simulate transient flow to a pumping well in a confined aquifer, which extracts water at a constant pumping rate.
+    The pumping well has a finite-thickness skin.
+
+    The function applies the Stehfest algorithm to numerically invert the Laplace transform.
+
+    Parameters
+    ----------
+    r : array_like
+      One-dimensional array with the radial distances [L].
+    t : array_like
+      One-dimensional array with the simulation times [T].
+    R : array_like
+       Radius [L] of well-skin (well-radius is zero)
+    T : array_like
+      Skin and aquifer transmissivities [L²/T], so T = [T_skin, T_aquifer]
+    S : array_like
+      Skin and aquifer storativities [-], so S = [S_skin, S_aquifer]
+    Q : float
+      Pumping rate [L³/T] of the well.
+    ns : int, default: `12`
+       Number of Stehfest parameters
+
+    Returns
+    -------
+    s : ndarray
+      Drawdown [L] at distances `r` and times `t`.
+      The shape of `s` is `(nr, nt)`, with `nr` the length of `r`, and `nt` the length of `t`.
+    """
+
+    N = lambda p: np.sqrt(S[0] / T[0] * p)
+    A = lambda p: np.sqrt(S[1] / T[1] * p)
+    NR = lambda p: R * N(p)
+    AR = lambda p: R * A(p)
+    I0NR = lambda p: i0(NR(p))
+    I1NR = lambda p: i1(NR(p))
+    K0NR = lambda p: k0(NR(p))
+    K1NR = lambda p: k1(NR(p))
+    K0AR = lambda p: k0(AR(p))
+    K1AR = lambda p: k1(AR(p))
+    TTAN = lambda p: T[1] / T[0] * A(p) / N(p)
+    QT = lambda p: Q / 2 / np.pi / T[0] / p
+    denominator = lambda p: (TTAN(p) * I0NR(p) * K1AR(p) + I1NR(p) * K0AR(p))
+    s1 = lambda p, r: QT(p) * (k0(N(p)*r) + (K1NR(p)*K0AR(p) - TTAN(p)*K0NR(p)*K1AR(p)) * i0(N(p)*r) / denominator(p))
+    s2 = lambda p, r: QT(p) * (K0NR(p)*I1NR(p) + K1NR(p)*I0NR(p)) * k0(A(p)*r) / denominator(p)
+
+    r = np.array(r)
+    t = np.array(t)
+    s = np.zeros((len(r), len(t)))
+    for i in range(len(r)):
+        for k in range(len(t)):
+            if r[i] <= R:
+                s[i, k] = stehfest(lambda p: s1(p, r[i]), t[k], ns)
+            else:
+                s[i, k] = stehfest(lambda p: s2(p, r[i]), t[k], ns)
+    return s
+
+
 def stehfest(F, t, ns=12):
     """
     Stehfest algorithm for numerical inversion of Laplace transforms.
