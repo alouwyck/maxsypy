@@ -6,14 +6,16 @@ import warnings
 
 def thiem(r, T, Q, r_out, h_out=0.0):
     """
-    Calculate hydraulic head at given distances r according to Thiem.
+    Calculate hydraulic head at given distances r according to the Thiem formula for steady confined flow.
 
     Parameters
     ----------
     r : array_like
       Radial distances [L], which should be smaller than `r_out`.
+    T : float
+      Aquifer transmissivity [L²/T].
     Q : float
-        Radial discharge [L³/T].
+        Pumping rate [L³/T] of the well.
     r_out : float
           Radial distance [L] of the outer aquifer boundary.
     h_out : float, default: 0.0
@@ -28,17 +30,30 @@ def thiem(r, T, Q, r_out, h_out=0.0):
     return h_out + Q / 2 / np.pi / T * np.log(r_out / r)
 
 
-def dupuit(r, K, h0, Q, R):
-    '''
-    calculates drawdown due to steady unconfined well-flow according to the Dupuit formula (equation 59)
-    r: radial distances [L] (array)
-    K: aquifer conductivity [L/T] (float)
-    h0: initial head [L] (float)
-    Q: pumping rate [L³/T] (float)
-    R: radius of influence, i.e. radial distance [L] of outer model boundary (float)
-    returns drawdown s [L] for given distances r (array)
-    '''
-    return h0 * (1 - np.sqrt(1 + Q/np.pi/K/h0**2 * np.log(r/R)))
+def dupuit(r, K, h0, Q, r_out):
+    """
+    Calculate hydraulic head at given distances r according to the Dupuit formula for steady unconfined flow.
+
+    Parameters
+    ----------
+    r : array_like
+      Radial distances [L], which should be smaller than `r_out`.
+    K : float
+      Aquifer conductivity [L/T].
+    h0 : float
+         Initial hydraulic head [L] which is the initial aquifer thickness before pumping.
+         `h0` is also the constant head at the outer aquifer boundary at distance `r_out`.
+    Q : float
+        Pumping rate [L³/T] of the well (which is negative in case of extraction).
+    r_out : float
+          Radial distance [L] of the outer aquifer boundary.
+
+    Returns
+    -------
+    h : ndarray
+      Hydraulic heads [L] at given distances `r`. The shape of `h` is the same as the shape of `r`.
+    """
+    return np.sqrt(h0**2 + Q / np.pi / K * np.log(r_out / r))
 
 
 def deglee(r, T, Q, r_in=0.0, c_top=np.inf, h_top=0.0, c_bot=np.inf, h_bot=0.0):
