@@ -28,6 +28,19 @@ def thiem(r, T, Q, r_out, h_out=0.0):
     return h_out + Q / 2 / np.pi / T * np.log(r_out / r)
 
 
+def dupuit(r, K, h0, Q, R):
+    '''
+    calculates drawdown due to steady unconfined well-flow according to the Dupuit formula (equation 59)
+    r: radial distances [L] (array)
+    K: aquifer conductivity [L/T] (float)
+    h0: initial head [L] (float)
+    Q: pumping rate [L³/T] (float)
+    R: radius of influence, i.e. radial distance [L] of outer model boundary (float)
+    returns drawdown s [L] for given distances r (array)
+    '''
+    return h0 * (1 - np.sqrt(1 + Q/np.pi/K/h0**2 * np.log(r/R)))
+
+
 def deglee(r, T, Q, r_in=0.0, c_top=np.inf, h_top=0.0, c_bot=np.inf, h_bot=0.0):
     """
     Simulate steady flow to a pumping well in a leaky aquifer, which extracts water at a constant pumping rate.
@@ -239,7 +252,7 @@ def butler(r, t, R, T, S, Q, ns=12):
       One-dimensional array with the radial distances [L].
     t : array_like
       One-dimensional array with the simulation times [T].
-    R : array_like
+    R : float
        Radius [L] of well-skin (well-radius is zero)
     T : array_like
       Skin and aquifer transmissivities [L²/T], so T = [T_skin, T_aquifer]
