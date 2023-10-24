@@ -57,10 +57,12 @@ def dupuit(r, K, h0, Q, r_out):
     return np.sqrt(h0**2 + Q / np.pi / K * np.log(r_out / r))
 
 
-def island(r, T, Q, N, r_out, r_in=0.0, h_out=0.0):
+def bredehoeft(r, T, Q, N, r_out, r_in=0.0, h_out=0.0):
     """
     Calculate the solution for steady flow to a pumping well in the center of an island with recharge.
     The solution is obtained by superimposing the Thiem formula and the equation for a circular infiltration area.
+    
+    The island case is discussed in the papers by Bredehoeft about the water budget myth.
 
     Parameters
     ----------
