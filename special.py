@@ -57,6 +57,37 @@ def dupuit(r, K, h0, Q, r_out):
     return np.sqrt(h0**2 + Q / np.pi / K * np.log(r_out / r))
 
 
+def island(r, T, Q, N, r_in, r_out, h_out=0.0):
+    """
+    Calculate the solution for steady flow to a pumping well in the center of an island with recharge.
+    The solution is obtained by superimposing the Thiem formula and the equation for a circular infiltration area.
+
+    Parameters
+    ----------
+    r : array_like
+      Radial distances [L], which should be smaller than `r_out`.
+    T : float
+      Aquifer transmissivity [L²/T].
+    Q : float
+      Pumping rate [L³/T].
+    N : float
+      Infiltration flux [L/T].
+    r_in : float
+         Pumping well radius [L], which coincides with the inner model boundary.
+    r_out : float
+          Radial distance [L] of the outer aquifer boundary.
+    h_out : float, default: 0.0
+          Hydraulic head [L] at the outer aquifer boundary at distance `r_out`.
+
+    Returns
+    -------
+    h : ndarray
+      Hydraulic heads [L] at given distances `r`. The shape of `h` is the same as the shape of `r`.
+    """
+    r = np.array(r)
+    return h_out + (N * r_in**2 - Q / np.pi) / 2 / T * np.log(r / r_out) + N / 4 / T * (r_out**2 - r**2)
+
+
 def deglee(r, T, Q, r_in=0.0, c_top=np.inf, h_top=0.0, c_bot=np.inf, h_bot=0.0):
     """
     Simulate steady flow to a pumping well in a leaky aquifer, which extracts water at a constant pumping rate.
