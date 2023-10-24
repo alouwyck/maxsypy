@@ -198,11 +198,11 @@ def theis_recovery(r, t, T, S, Q, t_end, S2=None):
       Drawdown [L] at distances `r` and times `t`.
       Shape of `s` is `(nr, nt)`, with `nr` the length of `r`, and `nt` the length of `t`.
     """
-    s = theis(r=r, t=t, T=T, S=S, Q=Q)
+    s = -theis(r=r, t=t, T=T, S=S, Q=Q)
     t = np.array(t)
     b = t > t_end
     if np.any(b):
-        s[:, b] += theis(r=r, t=t[b] - t_end, T=T, Q=-Q, S=S if S2 is None else S2)
+        s[:, b] -= theis(r=r, t=t[b] - t_end, T=T, Q=-Q, S=S if S2 is None else S2)
     return s
     
 
