@@ -169,6 +169,43 @@ def theis(r, t, T, S, Q, h_out=0.0):
     return h_out + Q / 4 / np.pi / T * exp1(r * r * S / 4 / t / T)
     
     
+def theis_recovery(r, t, T, S, Q, t_end, S2=None):
+    """
+    Simulate pumping followed by recovery in a confined aquifer. The well has an infinitesimal radius and extracts water
+    at a constant pumping rate during the pumping phase. The pump is shut down completely at the beginning of the
+    recovery phase. The solution is obtained by applying the superposition principle to the Theis equation.
+
+    Parameters
+    ----------
+    r : array_like
+      One-dimensional array with the radial distances [L].
+    t : array_like
+      One-dimensional array with the simulation times [T].
+    T : float
+      Aquifer transmissivity [L²/T].
+    S : float
+      Aquifer storativity [-] during pumping.
+    Q : float
+      Pumping rate [L³/T] of the well.
+    t_end : float
+          Time [T] at which the pumping stops and the recovery starts.
+    S2 : float, default: None
+       Aquifer storativity [-] during recovery. If `S2` is not given, `S2` is set to `S`.
+
+    Returns
+    -------
+    s : ndarray
+      Drawdown [L] at distances `r` and times `t`.
+      Shape of `s` is `(nr, nt)`, with `nr` the length of `r`, and `nt` the length of `t`.
+    """
+    s = theis(r=r, t=t, T=T, S=S, Q=Q)
+    t = np.array(t)
+    b = t > t_end
+    if np.any(b):
+        s[:, b] += theis(r=r, t=t[b] - t_end, T=T, Q=-Q, S=S if S2 is None else S2)
+    return s
+    
+
 def edelman(r, t, T, S, h_in=None, Q=None, h_out=0.0):
     """
     Simulate transient parallel flow in a semi-infinite aquifer.
