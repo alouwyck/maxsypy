@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.special import exp1, erfc, k0, k1, i0, i1
+from scipy.optimize import root
 from math import factorial, log
 import warnings
 
@@ -41,10 +42,10 @@ def dupuit(r, K, h0, Q, r_out):
     K : float
       Aquifer conductivity [L/T].
     h0 : float
-         Initial hydraulic head [L] which is the initial aquifer thickness before pumping.
-         `h0` is also the constant head at the outer aquifer boundary at distance `r_out`.
+       Initial hydraulic head [L] which is the initial aquifer thickness before pumping.
+       `h0` is also the constant head at the outer aquifer boundary at distance `r_out`.
     Q : float
-        Pumping rate [L³/T] of the well (which is negative in case of extraction).
+      Pumping rate [L³/T] of the well (which is negative in case of extraction).
     r_out : float
           Radial distance [L] of the outer aquifer boundary.
 
@@ -252,6 +253,122 @@ def W_approx(rho, tau):
         wb, rhob, taub = w[b], rho[b], tau[b]
         F[b] = 2*k0(rhob) - wb*exp1(rhob/2*np.exp(taub)) + (wb-1)*exp1(rhob*np.cosh(taub))
     return F
+
+
+def ernst(r, T, c, N, Q):
+    """
+    Simulate steady flow to a pumping well in a phreatic aquifer subject to uniform recharge and drainage.
+    The well is fully penetrating and extracts water at a constant pumping rate.
+
+    Parameters
+    ----------
+    r : array_like
+      One-dimensional array with the radial distances [L].
+    T : float
+      Aquifer transmissivity [L²/T].
+    c : float
+      Drainage resistance [T].
+    N : float
+      Infiltration flux [L/T].
+    Q : float
+      Pumping rate [L³/T] of the well.
+    
+    Returns
+    -------
+    s : ndarray
+      Drawdown [L] at distances `r`.
+      The length of `s` equals the length of `r`.
+    """
+    r = np.array(r)
+    if r.ndim == 0: r = r[np.newaxis]
+    s = np.zeros(r.shape)
+    R = find_R_ernst(T, c, N, Q)
+    b = r < R
+    s[b] = s_prox_ernst(r[b], T, c, N, Q, R)
+    b = ~b
+    s[b] = s_dist_ernst(r[b], T, c, N, R)
+    return s
+
+
+def find_R_ernst(T, c, N, Q):
+    """
+    Finds boundary between proximal and distal zone in the Ernst model
+    
+    Parameters
+    ----------
+    T : float
+      Aquifer transmissivity [L²/T].
+    c : float
+      Drainage resistance [T].
+    N : float
+      Infiltration flux [L/T].
+    Q : float
+      Pumping rate [L³/T] of the well.
+    
+    Returns
+    -------
+    R : float
+      Distance [L] of boundary between proximal and distal zone.
+    """
+    QD = Q / np.pi / N / T / c  # dimensionless pumping rate
+    L = np.sqrt(T*c)  # leakage factor
+    func = lambda rd: (2 * k1(rd/L) / k0(rd/L) + rd/L) * rd/L - QD
+    return root(func, 1).x[0]
+    
+
+def s_prox_ernst(r, T, c, N, Q, R):
+    """
+    Calculates drawdown in the proximal zone of the Ernst model.
+    
+    Parameters
+    ----------
+    r : array_like
+      One-dimensional array with the radial distances [L].
+    T : float
+      Aquifer transmissivity [L²/T].
+    c : float
+      Drainage resistance [T].
+    N : float
+      Infiltration flux [L/T].
+    Q : float
+      Pumping rate [L³/T] of the well.
+    R : float
+      Distance [L] of boundary between proximal and distal zone.
+    
+    Returns
+    -------
+    s : ndarray
+      Drawdown [L] at distances `r`.
+      The length of `s` equals the length of `r`.
+    """
+    return N * c - Q / 2 / np.pi / T * np.log(r/R) - N / 4 / T * (R**2 - r**2)
+
+
+def s_dist_ernst(r, T, c, N, R):
+    """
+    Calculates drawdown in the distal zone of the Ernst model.
+    
+    Parameters
+    ----------
+    r : array_like
+      One-dimensional array with the radial distances [L].
+    T : float
+      Aquifer transmissivity [L²/T].
+    c : float
+      Drainage resistance [T].
+    N : float
+      Infiltration flux [L/T].
+    R : float
+      Distance [L] of boundary between proximal and distal zone.
+    
+    Returns
+    -------
+    s : ndarray
+      Drawdown [L] at distances `r`.
+      The length of `s` equals the length of `r`.
+    """
+    L = np.sqrt(T * c)  # leakage factor
+    return  N * c * k0(r/L) / k0(R/L)
 
 
 def butler(r, t, R, T, S, Q, ns=12):
