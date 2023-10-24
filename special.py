@@ -483,7 +483,7 @@ def cooper(rc, rw, H0, T, S, t, r=None, ns=12):
         return stehfest(sp, t, ns)
     else:
         r = np.array(r)
-        if r.dim == 0: r = r[np.newaxis]
+        if r.ndim == 0: r = r[np.newaxis]
         rd = lambda r, p: r * np.sqrt(p * S / T)
         sp = lambda r, p: H0 * k0(rd(r, p)) / (2 * rwd(p) / rc / rc * T * k1(rwd(p)) + p * k0(rwd(p)))
         s = np.zeros((len(r), len(t)))
