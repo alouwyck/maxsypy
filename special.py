@@ -271,7 +271,8 @@ def ernst(r, T, c, N, Q):
     N : float
       Infiltration flux [L/T].
     Q : float
-      Pumping rate [L³/T] of the well.
+      Pumping rate [L³/T] of the well. 
+      Negative as the model only simulates extractions.
     
     Returns
     -------
@@ -304,6 +305,7 @@ def find_R_ernst(T, c, N, Q):
       Infiltration flux [L/T].
     Q : float
       Pumping rate [L³/T] of the well.
+      Negative as the model only simulates extractions.
     
     Returns
     -------
@@ -312,7 +314,7 @@ def find_R_ernst(T, c, N, Q):
     """
     QD = Q / np.pi / N / T / c  # dimensionless pumping rate
     L = np.sqrt(T*c)  # leakage factor
-    func = lambda rd: (2 * k1(rd/L) / k0(rd/L) + rd/L) * rd/L - QD
+    func = lambda rd: (2 * k1(rd/L) / k0(rd/L) + rd/L) * rd/L + QD
     return root(func, 1).x[0]
     
 
@@ -332,6 +334,7 @@ def s_prox_ernst(r, T, c, N, Q, R):
       Infiltration flux [L/T].
     Q : float
       Pumping rate [L³/T] of the well.
+      Negative as the model only simulates extractions.
     R : float
       Distance [L] of boundary between proximal and distal zone.
     
@@ -341,7 +344,7 @@ def s_prox_ernst(r, T, c, N, Q, R):
       Drawdown [L] at distances `r`.
       The length of `s` equals the length of `r`.
     """
-    return N * c - Q / 2 / np.pi / T * np.log(r/R) - N / 4 / T * (R**2 - r**2)
+    return N * c + Q / 2 / np.pi / T * np.log(r/R) - N / 4 / T * (R**2 - r**2)
 
 
 def s_dist_ernst(r, T, c, N, R):
