@@ -444,6 +444,54 @@ def s_dist_ernst(r, T, c, N, R):
     return  N * c * k0(r/L) / k0(R/L)
 
 
+def cooper(rc, rw, H0, T, S, t, r=None, ns=12):
+    """
+    Simulate a slug test conducted in a finite-diameter well fully penetrating a confined aquifer.
+
+    The function applies the Stehfest algorithm to numerically invert the Laplace transform.
+
+    Parameters
+    ----------
+    rc : float
+       Radius [L] of the well-casing.
+    rw : float
+       Radius [L] of the well-screen.
+    H0 : float
+       Initial and instantaneous head change [L] in the well.
+    T : float
+      Aquifer transmissivity [L²/T].
+    S : float
+      Aquifer storativity [-].
+    t : array_like
+      One-dimensional array with the simulation times [T].
+    r : array_like, default: `None`
+      Radial distances [L]. If `None`, head change in the well is simulated.
+    ns : int, default: `12`
+       Number of Stehfest parameters
+
+    Returns
+    -------
+    s : ndarray
+      Head change [L] at distances `r` and times `t`.
+      The shape of `s` is `(nr, nt)`, with `nr` the length of `r`, and `nt` the length of `t`.
+      If `r` is `None`, then the shape of `s` is `(nt, )`.
+    """
+    t = np.array(t)
+    rwd = lambda p: rw * np.sqrt(p * S / T)
+    if r is None:
+        sp = lambda p: H0 * k0(rwd(p)) / (2 * rwd(p) / rc / rc * T * k1(rwd(p)) + p * k0(rwd(p)))
+        return stehfest(sp, t, ns)
+    else:
+        r = np.array(r)
+        if r.dim == 0: r = r[np.newaxis]
+        rd = lambda r, p: r * np.sqrt(p * S / T)
+        sp = lambda r, p: H0 * k0(rd(r, p)) / (2 * rwd(p) / rc / rc * T * k1(rwd(p)) + p * k0(rwd(p)))
+        s = np.zeros((len(r), len(t)))
+        for i in range(len(r)):
+            s[i, :] = stehfest(lambda p: sp(r[i], p), t, ns)
+        return s
+
+        
 def butler(r, t, R, T, S, Q, ns=12):
     """
     Simulate transient flow to a pumping well in a confined aquifer, which extracts water at a constant pumping rate.
