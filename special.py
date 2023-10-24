@@ -383,8 +383,8 @@ def find_R_ernst(T, c, N, Q):
       Distance [L] of boundary between proximal and distal zone.
     """
     QD = Q / np.pi / N / T / c  # dimensionless pumping rate
-    L = np.sqrt(T*c)  # leakage factor
-    func = lambda rd: (2 * k1(rd/L) / k0(rd/L) + rd/L) * rd/L + QD
+    L = np.sqrt(T * c)  # leakage factor
+    func = lambda R: (2 * k1(R/L) / k0(R/L) + R/L) * R/L + QD
     return root(func, 1).x[0]
     
 
@@ -534,13 +534,15 @@ def butler(r, t, R, T, S, Q, ns=12):
     K0AR = lambda p: k0(AR(p))
     K1AR = lambda p: k1(AR(p))
     TTAN = lambda p: T[1] / T[0] * A(p) / N(p)
-    QT = lambda p: Q / 2 / np.pi / T[0] / p
+    QT = lambda p: -Q / 2 / np.pi / T[0] / p
     denominator = lambda p: (TTAN(p) * I0NR(p) * K1AR(p) + I1NR(p) * K0AR(p))
     s1 = lambda p, r: QT(p) * (k0(N(p)*r) + (K1NR(p)*K0AR(p) - TTAN(p)*K0NR(p)*K1AR(p)) * i0(N(p)*r) / denominator(p))
     s2 = lambda p, r: QT(p) * (K0NR(p)*I1NR(p) + K1NR(p)*I0NR(p)) * k0(A(p)*r) / denominator(p)
 
     r = np.array(r)
+    if r.ndim == 0: r = r[np.newaxis]
     t = np.array(t)
+    if t.ndim == 0: t = t[np.newaxis]
     s = np.zeros((len(r), len(t)))
     for i in range(len(r)):
         for k in range(len(t)):
