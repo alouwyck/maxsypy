@@ -8,9 +8,7 @@ The package implements several models discussed in this [PhD research](https://g
 *Louwyck, A., 2023. Axisymmetric Flow in Multilayer Aquifer Systems: Solutions and Theoretical Considerations. 
 PhD thesis, Laboratory for Applied Geology and Hydrogeology, Department of Geology, Ghent University, Belgium.*
 
-Folder `./seminary` contains the presentation for a seminary on groundwater modeling given at the Department of Geology of Ghent University on October 25, 2023. There is also an accompanying notebook with code examples which illustrate the use of the MAxSyPy package.
-
-It was not the aim of the PhD research to develop professional software for the general public. The code is written with the only objective to verify the newly developed solutions. It is not always well-documented, and in many cases, it is badly structured. For sure, computational performance of some algorithms can also be enhanced.
+Folder `./seminaries` contains presentations and notebooks with code examples illustrating the use of the MAxSyPy package.
 
 Copyright: © 2023
 
