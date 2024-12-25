@@ -1,0 +1,35 @@
+Observation well at 197 m from pumping well
+Pumping well has discharge equal to 69.1 m³/h
+Reference: Jiang Hui, Zeng Buo, Pan Hongyu, 2009. Groundwater Dynamics. Beijing, Geological Publishing House.
+
+time (min)	drawdown (m)
+1	0.05
+4	0.054
+7	0.12
+10	0.175
+15	0.26
+20	0.33
+25	0.383
+30	0.425
+45	0.52
+60	0.575
+75	0.62
+90	0.64
+120	0.685
+150	0.725
+180	0.735
+210	0.755
+240	0.76
+270	0.76
+300	0.763
+330	0.77
+360	0.772
+390	0.785
+420	0.79
+450	0.792
+480	0.794
+510	0.795
+540	0.796
+570	0.797
+600	0.798
+660	0.80
