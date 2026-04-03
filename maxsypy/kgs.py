@@ -91,7 +91,7 @@ def KGS_no_skin(t, H0, rw, rc, B, b, d, confined, Kr, Kz, Ss,
     # back transform to obtain head change
     f = f1(1)
     h = np.sum(w * phi(f), axis=1) * ln2t  # len(h) = nt
-    err = np.Inf
+    err = np.inf
     i = 1
     n = 2 + phreatic
     while (i < miniter or err > maxerr) and i < maxiter:
@@ -212,7 +212,7 @@ def KGS(t, H0, rw, rc, rs, B, b, d, confined, Kr, Kz, Ss, Krs, Kzs, Sss,
     # back transform to obtain head change
     f = f1(1)
     h = np.sum(w * phi(f), axis=1) * ln2t  # len(h) = nt
-    err = np.Inf
+    err = np.inf
     i = 1
     n = 2 + phreatic
     while (i < miniter or err > maxerr) and i < maxiter:
